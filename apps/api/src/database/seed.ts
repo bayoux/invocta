@@ -48,7 +48,9 @@ async function seed() {
       password: 'supervisor123',
       role: UserRole.SUPERVISOR,
     });
-    console.log('✅ Supervisor user created: supervisor@company.com / supervisor123');
+    console.log(
+      '✅ Supervisor user created: supervisor@company.com / supervisor123',
+    );
   } catch {
     console.log('⚠️  Supervisor user already exists');
   }
