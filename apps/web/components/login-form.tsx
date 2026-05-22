@@ -21,6 +21,7 @@ import { useAuthStore } from "@/store/auth.store"
 import { useRouter } from "next/navigation"
 import { authApi } from "@/lib/auth.api"
 import { toast } from "sonner"
+import Link from "next/link"
 
 export function LoginForm({
   className,
@@ -118,9 +119,12 @@ export function LoginForm({
 
                 <FieldDescription className="mt-2 text-center">
                   Don&apos;t have an account?{" "}
-                  <a href="#" className="underline underline-offset-4">
+                  <Link
+                    href="/register"
+                    className="underline underline-offset-4"
+                  >
                     Sign up
-                  </a>
+                  </Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
