@@ -358,6 +358,7 @@ export function DataTable() {
   const [data, setData] = React.useState<Debtor[]>([])
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(true)
+  const [activeTab, setActiveTab] = React.useState("all")
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -370,6 +371,8 @@ export function DataTable() {
   })
   const [globalFilter, setGlobalFilter] = React.useState("")
 
+  const statusFilter = activeTab === "all" ? undefined : activeTab
+
   const load = React.useCallback(async () => {
     setLoading(true)
     try {
@@ -377,6 +380,7 @@ export function DataTable() {
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
         search: globalFilter || undefined,
+        status: statusFilter as any,
       })
       setData(res.data)
       setTotal(res.total)
@@ -385,7 +389,7 @@ export function DataTable() {
     } finally {
       setLoading(false)
     }
-  }, [pagination.pageIndex, pagination.pageSize, globalFilter])
+  }, [pagination.pageIndex, pagination.pageSize, globalFilter, statusFilter])
 
   React.useEffect(() => {
     load()
@@ -427,7 +431,15 @@ export function DataTable() {
   const canAdd = user?.role === "admin" || user?.role === "manager"
 
   return (
-    <Tabs defaultValue="all" className="w-full flex-col justify-start gap-6">
+    <Tabs
+      value={activeTab}
+      onValueChange={(v: string) => {
+        setActiveTab(v)
+        setPagination((p) => ({ ...p, pageIndex: 0 }))
+      }}
+      className="w-full flex-col justify-start gap-6"
+    >
+      {" "}
       <div className="flex items-center justify-between px-4 lg:px-6">
         {/* Mobile selector */}
         <Label htmlFor="view-selector" className="sr-only">
@@ -510,7 +522,6 @@ export function DataTable() {
           )}
         </div>
       </div>
-
       <TabsContent
         value="all"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
@@ -645,15 +656,124 @@ export function DataTable() {
           </div>
         </div>
       </TabsContent>
-
-      <TabsContent value="active" className="px-4 lg:px-6">
-        <div className="flex aspect-video w-full flex-1 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
-          Фильтр «Активные» — в разработке
+      <TabsContent
+        value="active"
+        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+      >
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-muted">
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <TableHead key={h.id} colSpan={h.colSpan}>
+                      {h.isPlaceholder
+                        ? null
+                        : flexRender(h.column.columnDef.header, h.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    {[...Array(7)].map((_, j) => (
+                      <TableCell key={j}>
+                        <div className="h-4 animate-pulse rounded bg-muted" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    Активных должников нет
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </TabsContent>
-      <TabsContent value="ptp" className="px-4 lg:px-6">
-        <div className="flex aspect-video w-full flex-1 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
-          Фильтр «PTP» — в разработке
+      <TabsContent
+        value="ptp"
+        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+      >
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-muted">
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <TableHead key={h.id} colSpan={h.colSpan}>
+                      {h.isPlaceholder
+                        ? null
+                        : flexRender(h.column.columnDef.header, h.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    {[...Array(7)].map((_, j) => (
+                      <TableCell key={j}>
+                        <div className="h-4 animate-pulse rounded bg-muted" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    Должников с PTP нет
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </TabsContent>
     </Tabs>

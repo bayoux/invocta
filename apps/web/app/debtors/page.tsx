@@ -9,6 +9,7 @@ import type { Debtor, DebtorStatus, DebtorsFilter } from "@/types"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { CsvUploadButton } from "@/components/csv-upload-button"
 
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { Button } from "@workspace/ui/components/button"
@@ -216,10 +217,13 @@ export default function DebtorsPage() {
               <p className="text-sm text-muted-foreground">Всего: {total}</p>
             </div>
             {canEdit && (
-              <Button onClick={() => setShowCreate(true)}>
-                <PlusIcon />
-                Добавить
-              </Button>
+              <div className="flex gap-2">
+                <CsvUploadButton onSuccess={load} />
+                <Button onClick={() => setShowCreate(true)}>
+                  <PlusIcon />
+                  Добавить
+                </Button>
+              </div>
             )}
           </div>
 
