@@ -1,5 +1,10 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
+import { useAuthStore } from "@/store/auth.store"
+import { authApi } from "@/lib/auth.api"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -16,12 +21,6 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { useState } from "react"
-import { useAuthStore } from "@/store/auth.store"
-import { useRouter } from "next/navigation"
-import { authApi } from "@/lib/auth.api"
-import { toast } from "sonner"
-import Link from "next/link"
 
 export function LoginForm({
   className,
@@ -31,8 +30,30 @@ export function LoginForm({
   const [password, setPassword] = useState("admin123")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { setAuth } = useAuthStore()
+
+  const { setAuth, isAuthenticated, initFromStorage } = useAuthStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Show toast if redirected due to expired session
+  useEffect(() => {
+    const reason = searchParams.get("reason")
+    if (reason === "expired") {
+      toast.error("Сессия истекла. Войдите снова.")
+    }
+  }, [searchParams])
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    initFromStorage()
+  }, [initFromStorage])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = searchParams.get("from") || "/dashboard"
+      router.replace(from)
+    }
+  }, [isAuthenticated, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +62,8 @@ export function LoginForm({
       const res = await authApi.login({ email, password })
       setAuth(res.user, res.accessToken)
       toast.success(`Добро пожаловать, ${res.user.firstName}!`)
-      router.replace("/dashboard")
+      const from = searchParams.get("from") || "/dashboard"
+      router.replace(from)
     } catch {
       toast.error("Неверный email или пароль")
     } finally {
@@ -53,45 +75,39 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Вход в систему</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Введите ваши учётные данные для входа
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
-              {/* Поле Email */}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setEmail(e.target.value)
+                  }
                   placeholder="admin@company.com"
                   disabled={loading}
                   required
                 />
               </Field>
 
-              {/* Поле Пароля */}
               <Field>
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
+                <FieldLabel htmlFor="password">Пароль</FieldLabel>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPassword(e.target.value)
+                    }
                     disabled={loading}
                     required
                   />
@@ -101,34 +117,66 @@ export function LoginForm({
                     className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? "Скрыть" : "Показать"}
                   </button>
                 </div>
               </Field>
 
-              {/* Действия формы */}
               <Field>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Logging in..." : "Login"}
+                  {loading ? "Вход..." : "Войти"}
                 </Button>
 
-                {/* Раскомментируйте, если понадобится Google Auth */}
-                {/* <Button variant="outline" type="button" className="w-full" disabled={loading}>
-                  Login with Google
-                </Button> */}
-
                 <FieldDescription className="mt-2 text-center">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href="/register"
-                    className="underline underline-offset-4"
-                  >
-                    Sign up
-                  </Link>
+                  Нет аккаунта?{" "}
+                  <a href="/register" className="underline underline-offset-4">
+                    Регистрация
+                  </a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Quick fill for demo */}
+      <Card>
+        <CardContent className="pt-4">
+          <p className="mb-3 text-xs text-muted-foreground">
+            Тестовые аккаунты:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              {
+                label: "Admin",
+                email: "admin@company.com",
+                password: "admin123",
+              },
+              {
+                label: "Manager",
+                email: "manager@company.com",
+                password: "manager123",
+              },
+              {
+                label: "Supervisor",
+                email: "supervisor@company.com",
+                password: "supervisor123",
+              },
+            ].map((acc) => (
+              <Button
+                key={acc.email}
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => {
+                  setEmail(acc.email)
+                  setPassword(acc.password)
+                }}
+              >
+                {acc.label}
+              </Button>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>

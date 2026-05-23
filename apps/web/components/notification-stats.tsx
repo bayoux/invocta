@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { notificationsApi } from "@/lib/notifications.api"
+import { useAuthStore } from "@/store/auth.store"
 import type { NotificationStats } from "@/types"
 import {
   Card,
@@ -23,15 +24,18 @@ const CHANNEL_COLORS: Record<string, string> = {
 }
 
 export function NotificationStats() {
+  const { user } = useAuthStore()
   const [stats, setStats] = React.useState<NotificationStats | null>(null)
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
+    if (!user) return
     notificationsApi
       .getStats()
       .then(setStats)
+      .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   const sentCount =
     stats?.byStatus.find((s) => s.status === "sent")?.count ?? "0"

@@ -22,7 +22,10 @@ import { debtorsApi } from "@/lib/debtors.api"
 import { notificationsApi } from "@/lib/notifications.api"
 import type { DebtorStats, NotificationStats } from "@/types"
 
+import { useAuthStore } from "@/store/auth.store"
+
 export function SectionCards() {
+  const { user } = useAuthStore()
   const [debtorStats, setDebtorStats] = React.useState<DebtorStats | null>(null)
   const [notifStats, setNotifStats] = React.useState<NotificationStats | null>(
     null
@@ -30,13 +33,19 @@ export function SectionCards() {
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
+    // All roles can now access stats (backend updated)
+    // but guard anyway in case of older backend
+    if (!user) return
     Promise.all([debtorsApi.getStats(), notificationsApi.getStats()])
       .then(([ds, ns]) => {
         setDebtorStats(ds)
         setNotifStats(ns)
       })
+      .catch(() => {
+        // silently fail — user may not have permission
+      })
       .finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   const activeCount =
     debtorStats?.byStatus.find((s) => s.status === "active")?.count ?? "0"

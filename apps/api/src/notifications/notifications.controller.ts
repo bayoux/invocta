@@ -51,7 +51,7 @@ export class NotificationsController {
   }
 
   @Get('stats')
-  @Roles(UserRole.ADMIN, UserRole.SUPERVISOR)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPERVISOR)
   @ApiOperation({ summary: 'Статистика по уведомлениям' })
   getStats() {
     return this.notificationsService.getStats();

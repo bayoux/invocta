@@ -25,8 +25,8 @@ import {
   CircleUserRoundIcon,
   LogOutIcon,
 } from "lucide-react"
-import { useAuthStore } from "@/store/auth.store"
 import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/auth.store"
 
 export function NavUser({
   user,
@@ -102,7 +102,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/profile")}>
                 <CircleUserRoundIcon />
                 Профиль
               </DropdownMenuItem>

@@ -15,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { DebtorsService } from './debtors.service';
 import { CreateDebtorDto } from './dto/create-debtor.dto';
@@ -55,7 +56,7 @@ export class DebtorsController {
   }
 
   @Get('stats')
-  @Roles(UserRole.ADMIN, UserRole.SUPERVISOR)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPERVISOR)
   @ApiOperation({ summary: 'Статистика по должникам (для супервайзера)' })
   getStats() {
     return this.debtorsService.getStats();
