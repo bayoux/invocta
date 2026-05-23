@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './users/users.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 import { DebtorsModule } from './debtors/debtors.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
+import { WebhookModule } from './webhooks/webhook.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NotificationsModule } from './notifications/notifications.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -33,8 +35,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     UsersModule,
     DebtorsModule,
     NotificationsModule,
+    SchedulerModule,
+    WebhookModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

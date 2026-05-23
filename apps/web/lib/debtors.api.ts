@@ -61,3 +61,31 @@ export const debtorsApi = {
     await apiClient.delete(`/debtors/${id}`)
   },
 }
+
+export const exportDebtorsExcel = async (
+  filter: DebtorsFilter = {}
+): Promise<void> => {
+  const params = new URLSearchParams()
+  Object.entries(filter).forEach(([k, v]) => {
+    if (v !== undefined && v !== "") params.append(k, String(v))
+  })
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/debtors/export/excel?${params}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!res.ok) throw new Error("Export failed")
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = `debtors_${new Date().toISOString().slice(0, 10)}.xlsx`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export const getDebtorStatusHistory = async (id: string) => {
+  const { data } = await apiClient.get(`/debtors/${id}/history`)
+  return data
+}

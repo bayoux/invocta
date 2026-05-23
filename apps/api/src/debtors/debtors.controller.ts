@@ -9,13 +9,15 @@ import {
   UseGuards,
   ParseUUIDPipe,
   Query,
+  Request,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { DebtorsService } from './debtors.service';
 import { CreateDebtorDto } from './dto/create-debtor.dto';
@@ -55,9 +57,26 @@ export class DebtorsController {
     return this.debtorsService.findAll(filterDto);
   }
 
+  @Get('export/excel')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPERVISOR)
+  @ApiOperation({ summary: 'Экспорт должников в Excel (.xlsx)' })
+  async exportExcel(
+    @Query() filterDto: FilterDebtorsDto,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.debtorsService.exportToExcel(filterDto);
+    const filename = `debtors_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buffer);
+  }
+
   @Get('stats')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPERVISOR)
-  @ApiOperation({ summary: 'Статистика по должникам (для супервайзера)' })
+  @ApiOperation({ summary: 'Статистика по должникам' })
   getStats() {
     return this.debtorsService.getStats();
   }
@@ -75,8 +94,9 @@ export class DebtorsController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDebtorDto: UpdateDebtorDto,
+    @Request() req: any,
   ) {
-    return this.debtorsService.update(id, updateDebtorDto);
+    return this.debtorsService.update(id, updateDebtorDto, req.user?.id);
   }
 
   @Patch(':id/ptp')
@@ -85,8 +105,21 @@ export class DebtorsController {
   setPtp(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: { ptpDate: string; ptpAmount: number },
+    @Request() req: any,
   ) {
-    return this.debtorsService.setPtp(id, body.ptpDate, body.ptpAmount);
+    return this.debtorsService.setPtp(
+      id,
+      body.ptpDate,
+      body.ptpAmount,
+      req.user?.id,
+    );
+  }
+
+  @Get(':id/history')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPERVISOR)
+  @ApiOperation({ summary: 'История изменений статуса должника' })
+  getStatusHistory(@Param('id', ParseUUIDPipe) id: string) {
+    return this.debtorsService.getStatusHistory(id);
   }
 
   @Delete(':id')

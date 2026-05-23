@@ -43,6 +43,7 @@ import {
   CalendarIcon,
   SendIcon,
 } from "lucide-react"
+import { StatusHistoryTimeline } from "@/components/status-history-timeline"
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -420,6 +421,18 @@ export default function DebtorPage({
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              {/* Status history timeline */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm tracking-wider text-muted-foreground uppercase">
+                    История статусов
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StatusHistoryTimeline debtorId={debtor.id} />
                 </CardContent>
               </Card>
             </div>

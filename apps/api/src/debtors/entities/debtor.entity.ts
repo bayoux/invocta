@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Notification } from '../../notifications/entities/notification.entity';
+import { DebtorStatusHistory } from './debtor-status-history.entity';
 
 export enum DebtorStatus {
   ACTIVE = 'active', // Активный должник
@@ -97,6 +98,9 @@ export class Debtor {
 
   @OneToMany(() => Notification, (notification) => notification.debtor)
   notifications: Notification[];
+
+  @OneToMany(() => DebtorStatusHistory, (h) => h.debtor)
+  statusHistory: DebtorStatusHistory[];
 
   @CreateDateColumn()
   createdAt: Date;

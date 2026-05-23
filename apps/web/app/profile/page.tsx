@@ -16,7 +16,11 @@ import { Label } from "@workspace/ui/components/label"
 import { Badge } from "@workspace/ui/components/badge"
 import { Separator } from "@workspace/ui/components/separator"
 import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@workspace/ui/components/card"
 import { UserIcon, KeyIcon, ShieldIcon, Loader2Icon } from "lucide-react"
 import type { UserProfile, UserRole } from "@/types"
@@ -27,7 +31,10 @@ const ROLE_LABEL: Record<UserRole, string> = {
   supervisor: "Супервайзер",
 }
 
-const ROLE_VARIANT: Record<UserRole, "default" | "secondary" | "destructive" | "outline"> = {
+const ROLE_VARIANT: Record<
+  UserRole,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   admin: "destructive",
   manager: "default",
   supervisor: "secondary",
@@ -111,17 +118,18 @@ export default function ProfilePage() {
 
   return (
     <SidebarProvider
-      style={{
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-      } as React.CSSProperties}
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title="Профиль" />
 
-        <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 max-w-2xl">
-
+        <div className="flex max-w-2xl flex-1 flex-col gap-6 p-4 md:p-6">
           {/* ── Identity card ─────────────────────────────────────────── */}
           <Card>
             <CardHeader>
@@ -216,7 +224,10 @@ export default function ProfilePage() {
 
                 <Button type="submit" disabled={loading || savingInfo}>
                   {savingInfo ? (
-                    <><Loader2Icon className="h-4 w-4 animate-spin" /> Сохранение...</>
+                    <>
+                      <Loader2Icon className="h-4 w-4 animate-spin" />{" "}
+                      Сохранение...
+                    </>
                   ) : (
                     "Сохранить"
                   )}
@@ -228,7 +239,7 @@ export default function ProfilePage() {
           {/* ── Change password ─────────────────────────────────────────── */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <KeyIcon className="h-4 w-4" />
                 Смена пароля
               </CardTitle>
@@ -294,7 +305,10 @@ export default function ProfilePage() {
                   }
                 >
                   {savingPw ? (
-                    <><Loader2Icon className="h-4 w-4 animate-spin" /> Сохранение...</>
+                    <>
+                      <Loader2Icon className="h-4 w-4 animate-spin" />{" "}
+                      Сохранение...
+                    </>
                   ) : (
                     "Изменить пароль"
                   )}

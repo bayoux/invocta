@@ -165,3 +165,15 @@ export interface NotificationStats {
   byChannel: { channel: NotificationChannel; count: string }[]
   sentToday: number
 }
+
+// ─── Status History ──────────────────────────────────────────────────────────
+export interface DebtorStatusHistoryEntry {
+  id: string
+  debtorId: string
+  fromStatus: DebtorStatus | null
+  toStatus: DebtorStatus
+  comment: string | null
+  changedById: string | null
+  changedBy?: UserProfile
+  changedAt: string
+}

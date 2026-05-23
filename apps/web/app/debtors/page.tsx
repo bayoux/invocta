@@ -10,6 +10,8 @@ import type { Debtor, DebtorStatus, DebtorsFilter } from "@/types"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { CsvUploadButton } from "@/components/csv-upload-button"
+import { exportDebtorsExcel } from "@/lib/debtors.api"
+import { useDebounce } from "use-debounce"
 
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { Button } from "@workspace/ui/components/button"
@@ -54,6 +56,8 @@ import {
   EllipsisVerticalIcon,
   EyeIcon,
   Trash2Icon,
+  DownloadIcon,
+  Loader2Icon,
 } from "lucide-react"
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -136,17 +140,19 @@ export default function DebtorsPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<DebtorsFilter>({ page: 1, limit: 15 })
   const [search, setSearch] = useState("")
+  const [debouncedSearch] = useDebounce(search, 400)
   const [showCreate, setShowCreate] = useState(false)
   const [createForm, setCreateForm] =
     useState<Record<string, string>>(EMPTY_FORM)
   const [creating, setCreating] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const res = await debtorsApi.getAll({
         ...filter,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
       })
       setDebtors(res.data)
       setTotal(res.total)
@@ -155,11 +161,26 @@ export default function DebtorsPage() {
     } finally {
       setLoading(false)
     }
-  }, [filter, search])
+  }, [filter, debouncedSearch])
 
   useEffect(() => {
     load()
   }, [load])
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await exportDebtorsExcel({
+        ...filter,
+        search: debouncedSearch || undefined,
+      })
+      toast.success("Файл скачан")
+    } catch {
+      toast.error("Ошибка экспорта")
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Удалить должника ${name}?`)) return
@@ -218,6 +239,23 @@ export default function DebtorsPage() {
             </div>
             {canEdit && (
               <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  disabled={exporting}
+                >
+                  {exporting ? (
+                    <>
+                      <Loader2Icon className="h-4 w-4 animate-spin" />{" "}
+                      Экспорт...
+                    </>
+                  ) : (
+                    <>
+                      <DownloadIcon className="h-4 w-4" /> Excel
+                    </>
+                  )}
+                </Button>
                 <CsvUploadButton onSuccess={load} />
                 <Button onClick={() => setShowCreate(true)}>
                   <PlusIcon />
